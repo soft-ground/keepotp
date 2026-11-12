@@ -16,6 +16,9 @@ void main() {
   ));
 }
 
+/// Matches the accent color of the launcher icon.
+const _seed = Color(0xFF4FD1C5);
+
 class KeepOtpApp extends StatelessWidget {
   const KeepOtpApp({
     super.key,
@@ -35,9 +38,9 @@ class KeepOtpApp extends StatelessWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
+      theme: ThemeData(colorSchemeSeed: _seed, useMaterial3: true),
       darkTheme: ThemeData(
-          colorSchemeSeed: Colors.indigo, brightness: Brightness.dark, useMaterial3: true),
+          colorSchemeSeed: _seed, brightness: Brightness.dark, useMaterial3: true),
       builder: (context, child) => LockGate(controller: lock, child: child!),
       home: HomePage(controller: controller, lock: lock, clock: clock),
     );
