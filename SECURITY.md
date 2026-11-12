@@ -58,4 +58,3 @@ flutter build apk --release
 
 - [ ] Make sure admin@soft-ground.com is monitored.
 - [ ] Enable GitHub private vulnerability reporting on the repository.
-- [ ] Replace the placeholder application ID `dev.example.keep_otp`.

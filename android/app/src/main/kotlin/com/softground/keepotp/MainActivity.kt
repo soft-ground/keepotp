@@ -1,4 +1,4 @@
-package dev.example.keep_otp
+package com.softground.keepotp
 
 import android.content.pm.ApplicationInfo
 import android.os.Bundle
