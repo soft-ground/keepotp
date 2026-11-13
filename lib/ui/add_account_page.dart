@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import '../otp/base32.dart';
+import '../otp/google_migration.dart';
 import '../otp/otp_account.dart';
 import 'scan_page.dart';
 
@@ -19,7 +20,7 @@ class _AddAccountPageState extends State<AddAccountPage> {
   final _name = TextEditingController();
   final _secret = TextEditingController();
   final _uri = TextEditingController();
-  bool _uriInvalid = false;
+  String? _uriError;
 
   @override
   void dispose() {
@@ -31,28 +32,40 @@ class _AddAccountPageState extends State<AddAccountPage> {
   }
 
   Future<void> _scan() async {
-    final account = await Navigator.of(context).push<OtpAccount>(
+    final accounts = await Navigator.of(context).push<List<OtpAccount>>(
       MaterialPageRoute(builder: (_) => const ScanPage()),
     );
-    if (account != null && mounted) Navigator.of(context).pop(account);
+    if (accounts != null && mounted) Navigator.of(context).pop(accounts);
   }
 
   void _submitUri() {
     try {
-      Navigator.of(context).pop(OtpAccount.fromUri(_uri.text));
+      if (isMigrationUri(_uri.text)) {
+        final batch = parseMigrationUri(_uri.text);
+        if (batch.batchSize > 1) {
+          // Only the scanner can collect every part of a multi-part export.
+          setState(() => _uriError = AppLocalizations.of(context).migrationNeedsScan);
+          return;
+        }
+        Navigator.of(context).pop(batch.accounts);
+      } else {
+        Navigator.of(context).pop([OtpAccount.fromUri(_uri.text)]);
+      }
     } on FormatException {
-      setState(() => _uriInvalid = true);
+      setState(() => _uriError = AppLocalizations.of(context).invalidLink);
     }
   }
 
   void _submitManual() {
     if (!_form.currentState!.validate()) return;
-    Navigator.of(context).pop(OtpAccount(
-      type: OtpType.totp,
-      secret: base32Decode(_secret.text),
-      accountName: _name.text.trim(),
-      issuer: _issuer.text.trim(),
-    ));
+    Navigator.of(context).pop([
+      OtpAccount(
+        type: OtpType.totp,
+        secret: base32Decode(_secret.text),
+        accountName: _name.text.trim(),
+        issuer: _issuer.text.trim(),
+      ),
+    ]);
   }
 
   @override
@@ -76,9 +89,10 @@ class _AddAccountPageState extends State<AddAccountPage> {
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
               hintText: 'otpauth://totp/...',
-              errorText: _uriInvalid ? l10n.invalidLink : null,
+              errorText: _uriError,
+              errorMaxLines: 3,
             ),
-            onChanged: (_) => setState(() => _uriInvalid = false),
+            onChanged: (_) => setState(() => _uriError = null),
           ),
           const SizedBox(height: 8),
           Align(

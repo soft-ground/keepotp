@@ -99,6 +99,19 @@ AAD:        format | version | KDF name and parameters | salt | cipher | nonce
   rate limiting**. Argon2id makes each guess costly, but a short or common
   password will fall. Use a long passphrase.
 - There is no recovery. Forget the password and the backup is gone.
+
+### Importing from other apps
+
+A Google Authenticator export (`otpauth-migration://`) is read by a small
+protocol buffer reader written for this app, because the data comes from a QR
+code or pasted text that the user does not control. The reader rejects
+truncated or inconsistent data, caps the payload at 64 KiB and 500 accounts
+per code, skips unknown fields, and refuses unsupported algorithms (such as
+MD5) instead of guessing. An import cannot overwrite existing accounts:
+accounts with the same service, name and secret are skipped. The export
+itself holds the secrets in clear form, so anyone who photographs those QR
+codes can copy the accounts. Delete them from the old app once you have
+checked the new one.
 - The defaults are the OWASP minimum. They have not been tuned on low-end
   devices.
 

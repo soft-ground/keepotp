@@ -34,6 +34,12 @@
   "pasteLinkTitle": "Paste an otpauth:// link",
   "addFromLink": "Add from link",
   "invalidLink": "This is not a valid otpauth:// link.",
+  "scanMigrationProgress": "Scanned {scanned} of {total} QR codes. Show the next one.",
+  "@scanMigrationProgress": {
+    "description": "Shown while importing a multi-part Google Authenticator export.",
+    "placeholders": { "scanned": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "migrationNeedsScan": "This export is split over several QR codes. Use Scan QR code so all of them can be read.",
   "enterManually": "Enter manually",
   "serviceLabel": "Service (e.g. GitHub)",
   "accountLabel": "Account (e.g. you@example.com)",

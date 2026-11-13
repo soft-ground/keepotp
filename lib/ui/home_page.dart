@@ -50,10 +50,20 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _add() async {
     // The scan screen asks for camera permission, which backgrounds the app.
-    final account = await widget.lock.external(() => Navigator.of(context).push<OtpAccount>(
+    final accounts = await widget.lock.external(() => Navigator.of(context).push<List<OtpAccount>>(
           MaterialPageRoute(builder: (_) => const AddAccountPage()),
         ));
-    if (account != null) await widget.controller.add(account);
+    if (accounts == null || accounts.isEmpty) return;
+    if (accounts.length == 1) {
+      await widget.controller.add(accounts.single);
+      return;
+    }
+    // An export from another app: skip accounts that are already here.
+    final added = await widget.controller.addAll(accounts);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).importedAccounts(added))));
   }
 
   Future<void> _copy(OtpAccount a) async {

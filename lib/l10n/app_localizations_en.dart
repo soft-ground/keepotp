@@ -81,6 +81,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invalidLink => 'This is not a valid otpauth:// link.';
 
   @override
+  String scanMigrationProgress(int scanned, int total) {
+    return 'Scanned $scanned of $total QR codes. Show the next one.';
+  }
+
+  @override
+  String get migrationNeedsScan =>
+      'This export is split over several QR codes. Use Scan QR code so all of them can be read.';
+
+  @override
   String get enterManually => 'Enter manually';
 
   @override

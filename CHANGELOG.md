@@ -13,3 +13,5 @@ First public development version.
 - Encrypted backup file (Argon2id and AES-256-GCM) and `otpauth://` export.
 - App lock with biometrics or the device PIN.
 - Android: no network permission, screenshots blocked in release builds.
+- Import from Google Authenticator by scanning its "Transfer accounts" QR codes
+  or pasting the export link; exports split over several QR codes are collected.

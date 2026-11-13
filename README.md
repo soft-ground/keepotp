@@ -26,13 +26,17 @@ promise: **your codes are yours, and you can always take them with you.**
 
 - TOTP and HOTP (RFC 6238 / RFC 4226), SHA-1 / SHA-256 / SHA-512, 6–8 digits
 - Add accounts by QR scan, pasted `otpauth://` link, or manual entry
+- Move over from Google Authenticator: scan its "Transfer accounts" QR codes
+  (or paste the export link). Exports split over several QR codes are
+  collected automatically. Other apps that export `otpauth://` links work too.
 - App lock with biometrics or the device PIN
 - Android: screenshots and the recent-apps preview are blocked (release builds)
 - Copied codes are cleared from the clipboard after 30 seconds
 - English UI, with strings in ARB files ready for translation
 
-Planned: importing from other authenticator apps, showing the service's
-domain to help spot phishing, more languages. Passkeys are a long-term goal.
+Planned: importing the backup files of other authenticator apps, editing and
+reordering accounts, showing the service's domain to help spot phishing.
+Passkeys are a long-term goal.
 
 ## Build and run
 
@@ -57,7 +61,7 @@ flutter gen-l10n
 
 | Path | What it holds |
 |---|---|
-| `lib/otp/` | HOTP/TOTP, Base32, `otpauth://` parser and serializer |
+| `lib/otp/` | HOTP/TOTP, Base32, `otpauth://` parser and serializer, Google Authenticator export reader |
 | `lib/backup/` | Encrypted backup format (Argon2id + AES-256-GCM) |
 | `lib/data/`, `lib/state/` | Secure storage and the accounts controller |
 | `lib/lock/` | App lock: controller, OS authenticator, lock screen |

@@ -226,6 +226,18 @@ abstract class AppLocalizations {
   /// **'This is not a valid otpauth:// link.'**
   String get invalidLink;
 
+  /// Shown while importing a multi-part Google Authenticator export.
+  ///
+  /// In en, this message translates to:
+  /// **'Scanned {scanned} of {total} QR codes. Show the next one.'**
+  String scanMigrationProgress(int scanned, int total);
+
+  /// No description provided for @migrationNeedsScan.
+  ///
+  /// In en, this message translates to:
+  /// **'This export is split over several QR codes. Use Scan QR code so all of them can be read.'**
+  String get migrationNeedsScan;
+
   /// No description provided for @enterManually.
   ///
   /// In en, this message translates to:
