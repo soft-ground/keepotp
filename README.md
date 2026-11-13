@@ -31,6 +31,7 @@ promise: **your codes are yours, and you can always take them with you.**
   collected automatically. Other apps that export `otpauth://` links work too.
 - Rename accounts, reorder them by long-press and drag, and search once the
   list grows
+- Works in portrait and landscape, on phones and tablets, with large text
 - App lock with biometrics or the device PIN
 - Android: screenshots and the recent-apps preview are blocked (release builds)
 - Copied codes are cleared from the clipboard after 30 seconds

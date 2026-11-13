@@ -13,6 +13,9 @@ First public development version.
 - Encrypted backup file (Argon2id and AES-256-GCM) and `otpauth://` export.
 - App lock with biometrics or the device PIN.
 - Android: no network permission, screenshots blocked in release builds.
+- Landscape and tablet layouts: content keeps a readable width, dialogs scroll
+  when the keyboard is open, and the last account is never hidden behind the
+  add button.
 - Rename accounts, reorder them by long-press and drag, and search the list
   (shown from six accounts on).
 - Import from Google Authenticator by scanning its "Transfer accounts" QR codes

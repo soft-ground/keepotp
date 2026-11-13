@@ -108,6 +108,7 @@ Future<void> exportPlainText(BuildContext context, AccountsController c) async {
   final ok = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
+      scrollable: true,
       title: Text(l10n.exportPlainTitle),
       content: Text(l10n.exportPlainBody),
       actions: [
@@ -163,6 +164,7 @@ class _PasswordDialogState extends State<_PasswordDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return AlertDialog(
+      scrollable: true,
       title: Text(widget.confirm ? l10n.setBackupPassword : l10n.backupPassword),
       content: Column(
         mainAxisSize: MainAxisSize.min,

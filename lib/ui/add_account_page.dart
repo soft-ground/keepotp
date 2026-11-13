@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../otp/base32.dart';
 import '../otp/google_migration.dart';
 import '../otp/otp_account.dart';
+import 'content_width.dart';
 import 'scan_page.dart';
 
 /// Add an account by QR scan, pasted `otpauth://` link, or manual entry.
@@ -73,7 +74,8 @@ class _AddAccountPageState extends State<AddAccountPage> {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.addAccount)),
-      body: ListView(
+      body: ContentWidth(
+          child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           FilledButton.icon(
@@ -143,7 +145,7 @@ class _AddAccountPageState extends State<AddAccountPage> {
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import '../lock/lock_controller.dart';
+import 'content_width.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key, required this.lock});
@@ -32,7 +33,8 @@ class SettingsPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settingsTitle)),
-      body: ListenableBuilder(
+      body: ContentWidth(
+          child: ListenableBuilder(
         listenable: lock,
         builder: (context, _) => ListView(
           children: [
@@ -64,7 +66,7 @@ class SettingsPage extends StatelessWidget {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 }

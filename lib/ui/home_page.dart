@@ -9,6 +9,7 @@ import '../otp/otp_account.dart';
 import '../state/accounts_controller.dart';
 import 'add_account_page.dart';
 import 'backup_actions.dart';
+import 'content_width.dart';
 import 'settings_page.dart';
 
 typedef Clock = int Function(); // current Unix time in seconds
@@ -31,6 +32,9 @@ class HomePage extends StatefulWidget {
 
 /// The search button appears once the list is long enough to need it.
 const _searchMinAccounts = 6;
+
+/// Room below the last row so the floating button never covers it.
+const _listBottomPadding = EdgeInsets.only(bottom: 88);
 
 class _HomePageState extends State<HomePage> {
   Timer? _ticker;
@@ -118,6 +122,7 @@ class _HomePageState extends State<HomePage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
         title: Text(l10n.removeAccountTitle),
         content: Text(l10n.removeAccountBody(name)),
         actions: [
@@ -178,7 +183,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: _body(accounts, filter: searching ? _query : ''),
+      body: ContentWidth(child: _body(accounts, filter: searching ? _query : '')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _add,
         icon: const Icon(Icons.add),
@@ -212,6 +217,7 @@ extension on _HomePageState {
         return Center(child: Text(AppLocalizations.of(context).noSearchResults));
       }
       return ListView.separated(
+        padding: _listBottomPadding,
         itemCount: hits.length,
         separatorBuilder: (_, _) => const Divider(height: 1),
         itemBuilder: (_, i) => _tile(hits[i]),
@@ -220,6 +226,7 @@ extension on _HomePageState {
 
     // Long-press an account (or use the accessibility actions) to drag it.
     return ReorderableListView.builder(
+      padding: _listBottomPadding,
       itemCount: accounts.length,
       // newIndex is already the final position (the removed item is accounted for).
       onReorderItem: (oldIndex, newIndex) => widget.controller.move(oldIndex, newIndex),
@@ -265,6 +272,7 @@ class _EditDialogState extends State<_EditDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return AlertDialog(
+      scrollable: true,
       title: Text(l10n.editAccountTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
