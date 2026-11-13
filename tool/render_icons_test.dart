@@ -1,4 +1,5 @@
-// Renders the launcher icon masters into assets/icon/.
+// Renders the launcher icon masters into assets/icon/ and the store graphics
+// into store/assets/.
 //
 // Run from the repository root:
 //   flutter test tool/render_icons_test.dart
@@ -9,18 +10,21 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/painting.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-const _size = 1024.0;
 const _background = ui.Color(0xFF10304A);
 const _accent = ui.Color(0xFF4FD1C5);
 const _keyhole = ui.Color(0xFFFFFFFF);
+const _muted = ui.Color(0xFFB8C7D6);
 
 /// Draws the mark: a countdown ring (three quarters left, like a TOTP timer)
-/// around a keyhole. [scale] 1.0 is the base size.
-void _drawMark(ui.Canvas canvas, {required double scale}) {
+/// around a keyhole, centered on [center]. [scale] 1.0 is a ring of about
+/// 554 units across (a 1024 unit canvas).
+void _drawMark(ui.Canvas canvas, {required ui.Offset center, required double scale}) {
   canvas.save();
-  canvas.translate(_size / 2, _size / 2);
+  canvas.translate(center.dx, center.dy);
   canvas.scale(scale);
 
   const radius = 250.0;
@@ -61,27 +65,77 @@ void _drawMark(ui.Canvas canvas, {required double scale}) {
   canvas.restore();
 }
 
-Future<void> _write(String path, {required bool withBackground, required double scale}) async {
+Future<void> _save(String path, int width, int height, void Function(ui.Canvas) draw) async {
   final recorder = ui.PictureRecorder();
   final canvas = ui.Canvas(recorder);
-  if (withBackground) {
-    canvas.drawRect(const ui.Rect.fromLTWH(0, 0, _size, _size), ui.Paint()..color = _background);
-  }
-  _drawMark(canvas, scale: scale);
-  final image = await recorder.endRecording().toImage(_size.toInt(), _size.toInt());
+  draw(canvas);
+  final image = await recorder.endRecording().toImage(width, height);
   final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
   File(path)
     ..createSync(recursive: true)
     ..writeAsBytesSync(bytes!.buffer.asUint8List());
 }
 
+void _fill(ui.Canvas canvas, double w, double h) =>
+    canvas.drawRect(ui.Rect.fromLTWH(0, 0, w, h), ui.Paint()..color = _background);
+
+/// Loads Roboto from the Flutter SDK so text renders with a real font in tests.
+Future<void> _loadRoboto() async {
+  final root = Platform.environment['FLUTTER_ROOT'];
+  if (root == null) throw StateError('FLUTTER_ROOT is not set');
+  final dir = '$root/bin/cache/artifacts/material_fonts';
+  final loader = FontLoader('Roboto');
+  for (final f in ['roboto-regular.ttf', 'roboto-bold.ttf']) {
+    final bytes = File('$dir/$f').readAsBytesSync();
+    loader.addFont(Future.value(ByteData.sublistView(bytes)));
+  }
+  await loader.load();
+}
+
+void _text(ui.Canvas canvas, String text, ui.Offset at,
+    {required double size, required ui.Color color, FontWeight weight = FontWeight.w400}) {
+  final painter = TextPainter(
+    text: TextSpan(
+        text: text,
+        style: TextStyle(fontFamily: 'Roboto', fontSize: size, color: color, fontWeight: weight)),
+    textDirection: TextDirection.ltr,
+  )..layout();
+  painter.paint(canvas, at);
+}
+
 void main() {
-  testWidgets('render launcher icon masters', (tester) async {
+  testWidgets('render launcher icon masters and store graphics', (tester) async {
     await tester.runAsync(() async {
+      await _loadRoboto();
+
       // Full-bleed icon (iOS and legacy Android): the mark can be larger.
-      await _write('assets/icon/icon.png', withBackground: true, scale: 1.15);
-      // Adaptive foreground (transparent): flutter_launcher_icons insets this layer by 16%, which keeps the mark inside the safe zone.
-      await _write('assets/icon/icon_foreground.png', withBackground: false, scale: 1.5);
+      await _save('assets/icon/icon.png', 1024, 1024, (c) {
+        _fill(c, 1024, 1024);
+        _drawMark(c, center: const ui.Offset(512, 512), scale: 1.15);
+      });
+      // Adaptive foreground (transparent): flutter_launcher_icons insets this layer
+      // by 16%, which keeps the mark inside the safe zone.
+      await _save('assets/icon/icon_foreground.png', 1024, 1024, (c) {
+        _drawMark(c, center: const ui.Offset(512, 512), scale: 1.5);
+      });
+
+      // Google Play: 512 x 512 icon (Play rounds the corners itself).
+      await _save('store/assets/play-icon-512.png', 512, 512, (c) {
+        _fill(c, 512, 512);
+        _drawMark(c, center: const ui.Offset(256, 256), scale: 0.575);
+      });
+
+      // Google Play: 1024 x 500 feature graphic.
+      await _save('store/assets/feature-graphic.png', 1024, 500, (c) {
+        _fill(c, 1024, 500);
+        _drawMark(c, center: const ui.Offset(250, 250), scale: 0.62);
+        _text(c, 'Keep OTP', const ui.Offset(500, 150),
+            size: 92, color: _keyhole, weight: FontWeight.w700);
+        _text(c, 'Your codes stay on your device.', const ui.Offset(504, 262),
+            size: 32, color: _accent);
+        _text(c, 'Free  ·  Open source  ·  No tracking', const ui.Offset(504, 312),
+            size: 26, color: _muted);
+      });
     });
   });
 }
