@@ -17,6 +17,14 @@
   "codeCopied": "Code copied. Clipboard clears in {seconds} s.",
   "@codeCopied": { "placeholders": { "seconds": { "type": "int" } } },
 
+  "menuEdit": "Edit",
+  "editAccountTitle": "Edit account",
+  "save": "Save",
+  "searchTooltip": "Search",
+  "searchHint": "Search accounts",
+  "closeSearchTooltip": "Close search",
+  "noSearchResults": "No matching accounts",
+
   "removeAccountTitle": "Remove account?",
   "removeAccountBody": "Remove {name}?\n\nYou will not be able to sign in with this app until you set it up again on the service. Disable two-step verification there first if unsure.",
   "@removeAccountBody": {

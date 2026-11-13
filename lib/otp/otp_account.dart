@@ -28,11 +28,11 @@ class OtpAccount {
   final int period;
   final int counter;
 
-  OtpAccount copyWith({int? counter}) => OtpAccount(
+  OtpAccount copyWith({int? counter, String? accountName, String? issuer}) => OtpAccount(
         type: type,
         secret: secret,
-        accountName: accountName,
-        issuer: issuer,
+        accountName: accountName ?? this.accountName,
+        issuer: issuer ?? this.issuer,
         algorithm: algorithm,
         digits: digits,
         period: period,

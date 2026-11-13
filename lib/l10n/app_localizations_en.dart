@@ -46,6 +46,27 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get menuEdit => 'Edit';
+
+  @override
+  String get editAccountTitle => 'Edit account';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get searchTooltip => 'Search';
+
+  @override
+  String get searchHint => 'Search accounts';
+
+  @override
+  String get closeSearchTooltip => 'Close search';
+
+  @override
+  String get noSearchResults => 'No matching accounts';
+
+  @override
   String get removeAccountTitle => 'Remove account?';
 
   @override

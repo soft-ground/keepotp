@@ -29,14 +29,15 @@ promise: **your codes are yours, and you can always take them with you.**
 - Move over from Google Authenticator: scan its "Transfer accounts" QR codes
   (or paste the export link). Exports split over several QR codes are
   collected automatically. Other apps that export `otpauth://` links work too.
+- Rename accounts, reorder them by long-press and drag, and search once the
+  list grows
 - App lock with biometrics or the device PIN
 - Android: screenshots and the recent-apps preview are blocked (release builds)
 - Copied codes are cleared from the clipboard after 30 seconds
 - English UI, with strings in ARB files ready for translation
 
-Planned: importing the backup files of other authenticator apps, editing and
-reordering accounts, showing the service's domain to help spot phishing.
-Passkeys are a long-term goal.
+Planned: importing the backup files of other authenticator apps, showing the
+service's domain to help spot phishing. Passkeys are a long-term goal.
 
 ## Build and run
 

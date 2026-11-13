@@ -43,6 +43,31 @@ class AccountsController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Changes the service and account name of [account]; the secret and the
+  /// position in the list stay as they are.
+  Future<void> rename(OtpAccount account, {required String issuer, required String accountName}) async {
+    final i = _accounts.indexWhere((a) => identical(a, account));
+    if (i < 0) return;
+    _accounts = [..._accounts]
+      ..[i] = account.copyWith(issuer: issuer.trim(), accountName: accountName.trim());
+    await _store.save(_accounts);
+    notifyListeners();
+  }
+
+  /// Moves the account at [oldIndex] to [newIndex], where [newIndex] is its
+  /// position in the final list (the usual "remove, then insert" meaning).
+  Future<void> move(int oldIndex, int newIndex) async {
+    final n = _accounts.length;
+    if (oldIndex < 0 || oldIndex >= n || newIndex < 0 || newIndex >= n || oldIndex == newIndex) {
+      return;
+    }
+    final list = [..._accounts];
+    list.insert(newIndex, list.removeAt(oldIndex));
+    _accounts = list;
+    await _store.save(_accounts);
+    notifyListeners();
+  }
+
   /// HOTP accounts advance their counter each time a code is generated.
   Future<void> advanceHotp(OtpAccount account) async {
     final i = _accounts.indexWhere((a) => identical(a, account));

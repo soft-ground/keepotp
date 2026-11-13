@@ -29,9 +29,15 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+/// The search button appears once the list is long enough to need it.
+const _searchMinAccounts = 6;
+
 class _HomePageState extends State<HomePage> {
   Timer? _ticker;
   int _now = 0;
+  bool _searching = false;
+  final _searchField = TextEditingController();
+  String _query = '';
 
   @override
   void initState() {
@@ -45,7 +51,28 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     _ticker?.cancel();
+    _searchField.dispose();
     super.dispose();
+  }
+
+  void _setSearching(bool on) {
+    setState(() {
+      _searching = on;
+      if (!on) {
+        _searchField.clear();
+        _query = '';
+      }
+    });
+  }
+
+  Future<void> _edit(OtpAccount a) async {
+    final result = await showDialog<(String, String)>(
+      context: context,
+      builder: (_) => _EditDialog(account: a),
+    );
+    if (result != null) {
+      await widget.controller.rename(a, issuer: result.$1, accountName: result.$2);
+    }
   }
 
   Future<void> _add() async {
@@ -105,10 +132,34 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    return ListenableBuilder(
+      listenable: widget.controller,
+      builder: (context, _) => _scaffold(context, l10n),
+    );
+  }
+
+  Widget _scaffold(BuildContext context, AppLocalizations l10n) {
+    final accounts = widget.controller.accounts;
+    final canSearch = widget.controller.loaded && accounts.length >= _searchMinAccounts;
+    final searching = _searching && canSearch;
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.appTitle),
+        title: searching
+            ? TextField(
+                controller: _searchField,
+                autofocus: true,
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(hintText: l10n.searchHint, border: InputBorder.none),
+                onChanged: (v) => setState(() => _query = v.trim().toLowerCase()),
+              )
+            : Text(l10n.appTitle),
         actions: [
+          if (canSearch)
+            IconButton(
+              tooltip: searching ? l10n.closeSearchTooltip : l10n.searchTooltip,
+              icon: Icon(searching ? Icons.close : Icons.search),
+              onPressed: () => _setSearching(!searching),
+            ),
           PopupMenuButton<String>(
             onSelected: (v) => switch (v) {
               'export' => widget.lock.external(() => exportEncryptedBackup(context, widget.controller)),
@@ -127,32 +178,118 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: ListenableBuilder(
-        listenable: widget.controller,
-        builder: (context, _) {
-          if (!widget.controller.loaded) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final accounts = widget.controller.accounts;
-          if (accounts.isEmpty) return const _EmptyState();
-          return ListView.separated(
-            itemCount: accounts.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (_, i) => _AccountTile(
-              account: accounts[i],
-              now: _now,
-              onCopy: () => _copy(accounts[i]),
-              onDelete: () => _confirmDelete(accounts[i]),
-              onNextHotp: () => widget.controller.advanceHotp(accounts[i]),
-            ),
-          );
-        },
-      ),
+      body: _body(accounts, filter: searching ? _query : ''),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _add,
         icon: const Icon(Icons.add),
         label: Text(l10n.addAccount),
       ),
+    );
+  }
+}
+
+extension on _HomePageState {
+  Widget _tile(OtpAccount a) => _AccountTile(
+        account: a,
+        now: _now,
+        onCopy: () => _copy(a),
+        onEdit: () => _edit(a),
+        onDelete: () => _confirmDelete(a),
+        onNextHotp: () => widget.controller.advanceHotp(a),
+      );
+
+  Widget _body(List<OtpAccount> accounts, {required String filter}) {
+    if (!widget.controller.loaded) return const Center(child: CircularProgressIndicator());
+    if (accounts.isEmpty) return const _EmptyState();
+
+    if (filter.isNotEmpty) {
+      // Reordering is off while a filter is active: positions would be ambiguous.
+      final hits = [
+        for (final a in accounts)
+          if ('${a.issuer} ${a.accountName}'.toLowerCase().contains(filter)) a,
+      ];
+      if (hits.isEmpty) {
+        return Center(child: Text(AppLocalizations.of(context).noSearchResults));
+      }
+      return ListView.separated(
+        itemCount: hits.length,
+        separatorBuilder: (_, _) => const Divider(height: 1),
+        itemBuilder: (_, i) => _tile(hits[i]),
+      );
+    }
+
+    // Long-press an account (or use the accessibility actions) to drag it.
+    return ReorderableListView.builder(
+      itemCount: accounts.length,
+      // newIndex is already the final position (the removed item is accounted for).
+      onReorderItem: (oldIndex, newIndex) => widget.controller.move(oldIndex, newIndex),
+      itemBuilder: (_, i) => Column(
+        key: ObjectKey(accounts[i]),
+        mainAxisSize: MainAxisSize.min,
+        children: [_tile(accounts[i]), const Divider(height: 1)],
+      ),
+    );
+  }
+}
+
+class _EditDialog extends StatefulWidget {
+  const _EditDialog({required this.account});
+
+  final OtpAccount account;
+
+  @override
+  State<_EditDialog> createState() => _EditDialogState();
+}
+
+class _EditDialogState extends State<_EditDialog> {
+  late final _issuer = TextEditingController(text: widget.account.issuer);
+  late final _name = TextEditingController(text: widget.account.accountName);
+  bool _nameMissing = false;
+
+  @override
+  void dispose() {
+    _issuer.dispose();
+    _name.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (_name.text.trim().isEmpty) {
+      setState(() => _nameMissing = true);
+      return;
+    }
+    Navigator.pop(context, (_issuer.text, _name.text));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return AlertDialog(
+      title: Text(l10n.editAccountTitle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _issuer,
+            decoration: InputDecoration(
+                labelText: l10n.serviceLabel, border: const OutlineInputBorder()),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _name,
+            onChanged: (_) => setState(() => _nameMissing = false),
+            decoration: InputDecoration(
+              labelText: l10n.accountLabel,
+              border: const OutlineInputBorder(),
+              errorText: _nameMissing ? l10n.fieldRequired : null,
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
+        FilledButton(onPressed: _save, child: Text(l10n.save)),
+      ],
     );
   }
 }
@@ -189,6 +326,7 @@ class _AccountTile extends StatelessWidget {
     required this.account,
     required this.now,
     required this.onCopy,
+    required this.onEdit,
     required this.onDelete,
     required this.onNextHotp,
   });
@@ -196,6 +334,7 @@ class _AccountTile extends StatelessWidget {
   final OtpAccount account;
   final int now;
   final VoidCallback onCopy;
+  final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onNextHotp;
 
@@ -243,8 +382,10 @@ class _AccountTile extends StatelessWidget {
               ),
         ),
         PopupMenuButton<void>(
-          itemBuilder: (_) =>
-              [PopupMenuItem(onTap: onDelete, child: Text(AppLocalizations.of(context).remove))],
+          itemBuilder: (_) => [
+            PopupMenuItem(onTap: onEdit, child: Text(AppLocalizations.of(context).menuEdit)),
+            PopupMenuItem(onTap: onDelete, child: Text(AppLocalizations.of(context).remove)),
+          ],
         ),
       ]),
     );

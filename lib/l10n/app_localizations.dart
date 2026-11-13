@@ -160,6 +160,48 @@ abstract class AppLocalizations {
   /// **'Code copied. Clipboard clears in {seconds} s.'**
   String codeCopied(int seconds);
 
+  /// No description provided for @menuEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get menuEdit;
+
+  /// No description provided for @editAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit account'**
+  String get editAccountTitle;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @searchTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get searchTooltip;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search accounts'**
+  String get searchHint;
+
+  /// No description provided for @closeSearchTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Close search'**
+  String get closeSearchTooltip;
+
+  /// No description provided for @noSearchResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching accounts'**
+  String get noSearchResults;
+
   /// No description provided for @removeAccountTitle.
   ///
   /// In en, this message translates to:
