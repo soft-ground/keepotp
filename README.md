@@ -92,6 +92,9 @@ storage, or the lock, please describe the security impact in the PR. Report
 vulnerabilities privately as described in [SECURITY.md](SECURITY.md), not in
 public issues.
 
+Maintainers: see [RELEASING.md](RELEASING.md) for signing and the release
+checklist, and [CHANGELOG.md](CHANGELOG.md) for what changed.
+
 ## License
 
 Licensed under the [Apache License 2.0](LICENSE). Copyright 2026 soft-ground.
